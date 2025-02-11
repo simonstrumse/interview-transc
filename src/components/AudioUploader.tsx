@@ -55,8 +55,14 @@ const AudioUploader: React.FC = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const blob = new Blob([file], { type: file.type });
-      setAudioBlob(blob);
+      // For m4a files, we need to set the correct MIME type
+      const type =
+        file.type === "" && file.name.endsWith(".m4a")
+          ? "audio/m4a"
+          : file.type;
+
+      // Use the file directly instead of creating a new Blob
+      setAudioBlob(file);
     }
   };
 
