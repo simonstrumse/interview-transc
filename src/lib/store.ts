@@ -16,7 +16,7 @@ interface AudioState {
   setTranscription: (text: string) => void;
   setIsRecording: (isRecording: boolean) => void;
   setIsProcessing: (isProcessing: boolean) => void;
-  setRecordingTime: (time: number) => void;
+  setRecordingTime: (time: number | ((prev: number) => number)) => void;
   setArticleContent: (content: ArticleContent) => void;
   setFacts: (facts: FactBox[]) => void;
   setQuotes: (quotes: PullQuote[]) => void;

@@ -55,14 +55,30 @@ const AudioUploader: React.FC = () => {
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // For m4a files, we need to set the correct MIME type
-      const type =
-        file.type === "" && file.name.endsWith(".m4a")
-          ? "audio/m4a"
-          : file.type;
+      // Get file extension
+      const extension = file.name.split(".").pop()?.toLowerCase();
 
-      // Use the file directly instead of creating a new Blob
-      setAudioBlob(file);
+      // Check if it's a supported format
+      const supportedFormats = [
+        "flac",
+        "m4a",
+        "mp3",
+        "mp4",
+        "mpeg",
+        "mpga",
+        "oga",
+        "ogg",
+        "wav",
+        "webm",
+      ];
+
+      if (extension && supportedFormats.includes(extension)) {
+        setAudioBlob(file);
+      } else {
+        alert(
+          `Unsupported file format. Please upload one of these formats: ${supportedFormats.join(", ")}`,
+        );
+      }
     }
   };
 
@@ -73,7 +89,7 @@ const AudioUploader: React.FC = () => {
         setIsRecording(true);
         setRecordingTime(0);
         timerRef.current = setInterval(() => {
-          setRecordingTime((time) => time + 1);
+          setRecordingTime((prevTime: number) => prevTime + 1);
         }, 1000);
       }
     } else {

@@ -5,15 +5,63 @@ const openai = new OpenAI({
   dangerouslyAllowBrowser: true,
 });
 
+function getMimeType(extension: string): string {
+  const mimeTypes: Record<string, string> = {
+    m4a: "audio/m4a",
+    mp3: "audio/mpeg",
+    mp4: "audio/mp4",
+    mpeg: "audio/mpeg",
+    mpga: "audio/mpeg",
+    oga: "audio/ogg",
+    ogg: "audio/ogg",
+    wav: "audio/wav",
+    webm: "audio/webm",
+    flac: "audio/flac",
+  };
+
+  return mimeTypes[extension] || "audio/mpeg";
+}
+
 export async function transcribeAudio(audioBlob: Blob): Promise<string> {
   try {
-    // If it's already a File, use it directly, otherwise convert Blob to File
-    const file =
-      audioBlob instanceof File
-        ? audioBlob
-        : new File([audioBlob], "audio.mp3", {
-            type: audioBlob.type || "audio/mp3",
-          });
+    let file: File;
+
+    if (audioBlob instanceof File) {
+      // For uploaded files, ensure proper MIME type
+      const extension = audioBlob.name.split(".").pop()?.toLowerCase() || "mp3";
+      const mimeType = getMimeType(extension);
+
+      // Create new file with correct MIME type
+      file = new File([audioBlob], audioBlob.name, {
+        type: mimeType,
+      });
+    } else {
+      // For recorded blobs
+      file = new File([audioBlob], "audio.mp3", {
+        type: audioBlob.type || "audio/mp3",
+      });
+    }
+
+    // Validate file type
+    const validTypes = [
+      "flac",
+      "m4a",
+      "mp3",
+      "mp4",
+      "mpeg",
+      "mpga",
+      "oga",
+      "ogg",
+      "wav",
+      "webm",
+    ];
+    const fileExtension = file.name.split(".").pop()?.toLowerCase();
+
+    if (!fileExtension || !validTypes.includes(fileExtension)) {
+      throw new Error(
+        `Invalid file format. Supported formats: ${validTypes.join(", ")}`,
+      );
+    }
 
     const response = await openai.audio.transcriptions.create({
       file: file,
@@ -124,7 +172,6 @@ function parseAIResponse(content: string) {
 
     // Handle quotes section
     if (
-      line.startsWith("### Nøkkel Sitater") ||
       line.startsWith("### Notable Quotes") ||
       line.startsWith("### Quotes")
     ) {
@@ -141,11 +188,7 @@ function parseAIResponse(content: string) {
     }
 
     // Handle facts section
-    if (
-      line.startsWith("### Viktige Fakta") ||
-      line.startsWith("### Key Facts") ||
-      line.startsWith("### Facts")
-    ) {
+    if (line.startsWith("### Key Facts") || line.startsWith("### Facts")) {
       currentSection = "facts";
       continue;
     }
