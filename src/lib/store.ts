@@ -39,7 +39,11 @@ export const useAudioStore = create<AudioState>((set) => ({
   setTranscription: (text) => set({ transcription: text }),
   setIsRecording: (isRecording) => set({ isRecording }),
   setIsProcessing: (isProcessing) => set({ isProcessing }),
-  setRecordingTime: (time) => set({ recordingTime: time }),
+  setRecordingTime: (time) =>
+    set((state) => ({
+      recordingTime:
+        typeof time === "function" ? time(state.recordingTime) : time,
+    })),
   setArticleContent: (content) => set({ articleContent: content }),
   setFacts: (facts) => set({ facts }),
   setQuotes: (quotes) => set({ quotes }),
