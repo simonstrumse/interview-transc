@@ -137,7 +137,7 @@ const AudioUploader: React.FC = () => {
         />
 
         {/* Upload Section */}
-        <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed border-gray-300 rounded-lg">
+        <div className="flex flex-col items-center gap-4 p-4 border-2 border-dashed border-gray-300 rounded-lg relative">
           <Input
             type="file"
             accept="audio/*"
@@ -152,6 +152,27 @@ const AudioUploader: React.FC = () => {
             <Upload className="h-6 w-6 text-gray-600" />
             <span className="text-gray-600">Upload Audio File</span>
           </label>
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                const response = await fetch("/avhort-kort.mp3");
+                const blob = await response.blob();
+                const file = new File([blob], "avhort-kort.mp3", {
+                  type: "audio/mp3",
+                });
+                setAudioBlob(file);
+              } catch (error) {
+                console.error("Error loading demo file:", error);
+                alert("Error loading demo file");
+              }
+            }}
+            className="absolute bottom-2 right-2 text-xs"
+          >
+            Try Demo
+          </Button>
         </div>
 
         {/* Recording and Controls Section */}
